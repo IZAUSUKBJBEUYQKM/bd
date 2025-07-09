@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday Countdown</title>
+    <link href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@400;700&family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Dancing Script', cursive;
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+        }
+
+        .left-half {
+            width: 30%;
+            background: #f9e79f;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: width 0.3s ease;
+        }
+
+        .left-half h1 {
+            font-family: 'Dancing Script', cursive;
+            font-size: 3.5em;
+            font-weight: bold;
+            color: #8C6744;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .right-half {
+            width: 70%;
+            background: url('bd3.jpg') no-repeat center center;
+            background-size: cover;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: width 0.3s ease;
+        }
+
+        #countdown {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(249, 231, 159, 0.9);
+            padding: 20px 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .countdown-boxes {
+            display: flex;
+            align-items: center;
+        }
+
+        .countdown-box {
+            width: 60px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 5px;
+            border-radius: 10px;
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #8C6744;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
+        }
+
+        .countdown-labels {
+            display: flex;
+            justify-content: space-between;
+            width: 240px;
+            margin-top: 10px;
+            color: #4a4063;
+            font-size: 1em;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
+        }
+
+        .masonry-grid {
+            display: none;
+            column-count: 1;
+            column-gap: 20px;
+            width: 90%;
+            padding: 20px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .card {
+            break-inside: avoid;
+            background: rgba(255, 255, 255, 0.8); /* Less transparent background */
+            border: 2px solid #d68910;
+            border-radius: 15px;
+            width: 150px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            cursor: pointer;
+            text-align: center;
+            transition: transform 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .card:hover {
+            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.9); /* Slightly lighter on hover */
+        }
+
+        .card span {
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.8em;
+            color: #8C6744;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .full-page {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            color: #fff;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .full-page.active {
+            display: flex;
+        }
+
+        .full-page .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 1;
+        }
+
+        .full-page-content {
+            position: relative;
+            z-index: 2;
+            max-width: 80%;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .close-btn, .back-btn {
+            position: absolute;
+            top: 20px;
+            font-size: 1.5em;
+            cursor: pointer;
+            font-family: 'Dancing Script', cursive;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .close-btn {
+            right: 20px;
+        }
+
+        .back-btn {
+            left: 20px;
+        }
+
+        #wish-content h1 {
+            font-size: 2em;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        @media (max-width: 1024px) {
+            .left-half {
+                width: 40%;
+            }
+            .right-half {
+                width: 60%;
+            }
+            .countdown-box {
+                width: 50px;
+                height: 70px;
+                font-size: 2em;
+            }
+            .countdown-labels {
+                width: 200px;
+            }
+            .card {
+                width: 130px;
+                height: 50px;
+            }
+            .card span {
+                font-size: 1.6em;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .masonry-grid {
+                column-count: 1;
+            }
+            .left-half {
+                width: 45%;
+            }
+            .right-half {
+                width: 55%;
+            }
+            .countdown-box {
+                width: 45px;
+                height: 65px;
+                font-size: 1.8em;
+            }
+            .countdown-labels {
+                width: 180px;
+                font-size: 0.9em;
+            }
+            .card {
+                width: 110px;
+                height: 45px;
+            }
+            .card span {
+                font-size: 1.4em;
+            }
+            .left-half h1 {
+                font-size: 3em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .masonry-grid {
+                column-count: 1;
+                
+            }
+            .left-half {
+                width: 100%;
+                height: 20%;
+            }
+            .right-half {
+                width: 100%;
+                height: 80%;
+            }
+            .countdown-box {
+                width: 40px;
+                height: 60px;
+                font-size: 1.5em;
+            }
+            .countdown-labels {
+                width: 160px;
+                font-size: 0.8em;
+            }
+            .card {
+                width: 90px;
+                height: 40px;
+            }
+            .card span {
+                font-size: 1.2em;
+            }
+            .left-half h1 {
+                font-size: 2.5em;
+            }
+        }
+
+        @media (max-width: 320px) {
+            .countdown-box {
+                width: 35px;
+                height: 50px;
+                font-size: 1.2em;
+            }
+            .countdown-labels {
+                width: 140px;
+                font-size: 0.7em;
+            }
+            .left-half h1 {
+                font-size: 2em;
+            }
+            .card {
+                width: 70px;
+                height: 35px;
+
+            }
+            .card span {
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="left-half">
+        <h1>Happy Birthday!</h1>
+    </div>
+    <div class="right-half">
+        <div id="countdown">
+            <div class="countdown-boxes">
+                <div class="countdown-box" id="days"></div>
+                <div class="countdown-box" id="hours"></div>
+                <div class="countdown-box" id="minutes"></div>
+                <div class="countdown-box" id="seconds"></div>
+            </div>
+            <div class="countdown-labels">
+                <span>days</span>
+                <span>hours</span>
+                <span>minutes</span>
+                <span>seconds</span>
+            </div>
+        </div>
+        <div class="masonry-grid" id="messages">
+            <div class="card" onclick="showWish(1)">
+                <span>Click</span>
+            </div>
+        </div>
+        <div id="full-page" class="full-page">
+            <span class="close-btn" onclick="hideWish()">×</span>
+            <span class="back-btn" onclick="goBack()"></span>
+            <div class="overlay"></div>
+            <div id="wish-content" class="full-page-content"></div>
+        </div>
+    </div>
+
+    <script>
+        const birthday = new Date('July 10, 2025 00:00:00 GMT+0530').getTime(); // Ends at 09:00 PM IST today
+        const daysElem = document.getElementById('days');
+        const hoursElem = document.getElementById('hours');
+        const minutesElem = document.getElementById('minutes');
+        const secondsElem = document.getElementById('seconds');
+        const countdown = document.getElementById('countdown');
+        const messages = document.getElementById('messages');
+        const fullPage = document.getElementById('full-page');
+        const wishContent = document.getElementById('wish-content');
+
+        if (!daysElem || !hoursElem || !minutesElem || !secondsElem) {
+            console.error('Countdown elements not found!');
+        }
+
+        const wishes = [
+            "Happy birthdayyyy\n\nWishing you the happiest birthday and an amazing year ahead.\nJust wanted to say thank you for always being there. Thankyou for always helping me :)\nWishing you all the success in the world — because you truly deserve it. You're one of the smartest, most intelligent people I know, and I have no doubt you’re going to go far in life.\n Happy birthday once again!"
+        ];
+
+        const vanGoghBackgrounds = [
+            'bd4.jpg'
+        ];
+
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const timeLeft = birthday - now;
+
+            if (timeLeft <= 0) {
+                countdown.style.display = 'none';
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+                setTimeout(() => {
+                    messages.style.display = 'block';
+                }, 2000);
+                return;
+            }
+
+            const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+            daysElem.textContent = String(days).padStart(2, '0');
+            hoursElem.textContent = String(hours).padStart(2, '0');
+            minutesElem.textContent = String(minutes).padStart(2, '0');
+            secondsElem.textContent = String(seconds).padStart(2, '0');
+
+            setTimeout(updateCountdown, 1000);
+        }
+
+        function showWish(index) {
+            wishContent.innerHTML = `<h1>${wishes[index - 1].replace(/\n/g, '<br>')}</h1>`;
+            fullPage.style.backgroundImage = `url('${vanGoghBackgrounds[index - 1]}')`;
+            fullPage.classList.add('active');
+        }
+
+        function hideWish() {
+            fullPage.classList.remove('active');
+        }
+
+        function goBack() {
+            hideWish();
+            messages.style.display = 'block';
+        }
+
+        updateCountdown();
+    </script>
+</body>
+</html>
